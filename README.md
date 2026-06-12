@@ -4,6 +4,9 @@
 
 **Design Document:** https://drive.google.com/drive/folders/1wlkVrQBY2DwW_B3o0kgpv3tfrT7NA06u?usp=drive_link
 
+**Demo Video:** https://drive.google.com/file/d/1xXhMNtWqJfbI_8SUfhwAt3Rjw0wdoauX/view?usp=sharing
+"Sir, whoever is watching this video, please wear headphones because, for some reason, the audio was recorded at a very low volume."
+
 ## Project Overview
 This project is a real-time ride management platform designed for campus environments. It enables passengers to request rides and drivers to accept and manage those requests seamlessly. Built to be responsive, scalable, and highly interactive, the platform mirrors core functionalities of real-world ride-hailing applications.
 
