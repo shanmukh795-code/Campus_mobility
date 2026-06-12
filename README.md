@@ -1,5 +1,7 @@
 # Real-Time Campus Mobility Platform
 
+**Live Demo:** [https://campus-mobility-pnhw.onrender.com](https://campus-mobility-pnhw.onrender.com)
+
 ## Project Overview
 This project is a real-time ride management platform designed for campus environments. It enables passengers to request rides and drivers to accept and manage those requests seamlessly. Built to be responsive, scalable, and highly interactive, the platform mirrors core functionalities of real-world ride-hailing applications.
 
@@ -27,7 +29,7 @@ This project is a real-time ride management platform designed for campus environ
    - **macOS/Linux:** `source venv/bin/activate`
 4. Install dependencies:
    ```bash
-   pip install fastapi uvicorn sqlalchemy pyjwt passlib[bcrypt] websockets
+   pip install fastapi uvicorn sqlalchemy pyjwt passlib[bcrypt] websockets pydantic[email] python-multipart
    ```
 
 ## Running the Application
