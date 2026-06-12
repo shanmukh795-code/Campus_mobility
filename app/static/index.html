@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Mobility</title>
+    <link rel="stylesheet" href="styles.css?v=8">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Dynamic Content Injected Here -->
+    </div>
+    
+    <!-- Template: Login/Register -->
+    <template id="tpl-auth">
+        <div class="auth-container">
+            <div class="glass-card auth-card">
+                <h2>Campus Mobility</h2>
+                <div class="toggle-group">
+                    <button id="btn-show-login" class="active">Login</button>
+                    <button id="btn-show-register">Register</button>
+                </div>
+                
+                <form id="auth-form">
+                    <input type="email" id="email" placeholder="Email" required>
+                    <input type="password" id="password" placeholder="Password" required>
+                    
+                    <div id="register-fields" style="display: none;">
+                        <input type="text" id="name" placeholder="Full Name">
+                        <select id="role">
+                            <option value="passenger">Passenger</option>
+                            <option value="driver">Driver</option>
+                        </select>
+                        <input type="text" id="vehicle_info" placeholder="Vehicle Info (Drivers only)" style="display: none;">
+                    </div>
+                    
+                    <button type="submit" class="primary-btn">Let's Go</button>
+                </form>
+                <div id="auth-error" class="error-msg"></div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template: Passenger Dashboard -->
+    <template id="tpl-passenger">
+        <div class="dashboard-container">
+            <header class="driver-header">
+                <h2>Passenger Dashboard</h2>
+                <div style="display:flex; align-items:center; gap:20px;">
+                    <span id="available-drivers-badge" class="status-badge in-progress" style="margin-bottom:0; font-size:0.85rem; padding: 8px 16px;">Loading drivers...</span>
+                    <button id="btn-logout" class="secondary-btn" style="border:none; border-radius:12px;">Logout</button>
+                </div>
+            </header>
+            
+            <div class="bento-grid">
+                <!-- Map Container -->
+                <div class="bento-card col-span-12" style="padding: 10px;">
+                    <div id="passenger-map" class="map-container dark-map-skin" style="height: 350px; border-radius: 12px;"></div>
+                </div>
+                
+                <!-- Request Ride Card -->
+                <div class="bento-card col-span-6">
+                    <h3 style="margin-bottom:20px; font-weight:600; font-size:1.2rem;">Request a Ride</h3>
+                    <form id="request-ride-form" style="display:flex; flex-direction:column; gap:16px;">
+                        <div class="input-group">
+                            <label>Pickup Location</label>
+                            <input type="text" id="pickup_addr" placeholder="E.g., Main Gate" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Destination</label>
+                            <input type="text" id="dest_addr" placeholder="E.g., Library" required>
+                        </div>
+                        <button type="submit" class="primary-btn pulse-anim" style="margin-top:auto;">Request Now</button>
+                    </form>
+                </div>
+
+                <!-- Active Ride Status -->
+                <div class="bento-card col-span-6 active-ride-card" id="passenger-active-ride">
+                    <h3 style="margin-bottom:20px; font-weight:600; font-size:1.2rem;">Current Ride</h3>
+                    <div class="ride-details" style="flex-grow:1; display:flex; flex-direction:column;">
+                        <div id="passenger-ride-status" class="status-badge" style="align-self:flex-start;">No active ride</div>
+                        <div id="passenger-ride-details" style="flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
+                            <div class="empty-state" style="margin:auto; display:flex; flex-direction:column; align-items:center;">
+                                <span style="font-size:3rem; margin-bottom:10px; opacity:0.5;">🚗</span>
+                                <p>Where to?</p>
+                            </div>
+                        </div>
+                        <div id="passenger-actions" class="action-buttons" style="display: none; margin-top:20px;">
+                            <button id="btn-cancel-ride" class="secondary-btn" style="color:var(--error); border-color:var(--error); width:100%; padding:16px;">Cancel Ride</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ratings Modal -->
+        <div id="rating-modal" class="modal" style="display: none;">
+            <div class="modal-content glass-card">
+                <h3>Rate your ride</h3>
+                <p>How was your experience?</p>
+                <div class="rating-stars">
+                    <span class="star" data-val="1">★</span>
+                    <span class="star" data-val="2">★</span>
+                    <span class="star" data-val="3">★</span>
+                    <span class="star" data-val="4">★</span>
+                    <span class="star" data-val="5">★</span>
+                </div>
+                <input type="text" id="rating-feedback" placeholder="Leave some feedback (optional)" style="margin-top:10px;">
+                <button id="btn-submit-rating" class="primary-btn" style="margin-top:15px; width:100%;">Submit Rating</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template: Driver Dashboard -->
+    <template id="tpl-driver">
+        <div class="dashboard-container">
+            <header class="driver-header">
+                <h2>Driver Dashboard</h2>
+                <div style="display:flex; align-items:center; gap:20px;">
+                    <div class="status-toggle" style="display:flex; align-items:center; gap:10px;">
+                        <span id="driver-status-text" style="font-weight:600; color:var(--text-muted);">Status: Offline</span>
+                        <label class="switch">
+                            <input type="checkbox" id="driver-online-toggle">
+                            <span class="slider round" style="box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);"></span>
+                        </label>
+                    </div>
+                    <button id="btn-logout" class="secondary-btn" style="border:none; border-radius:12px;">Logout</button>
+                </div>
+            </header>
+            
+            <div class="bento-grid">
+                <!-- Map Container (spans top width) -->
+                <div class="bento-card col-span-12" style="padding: 10px;">
+                    <div id="driver-map" class="map-container dark-map-skin" style="height: 350px; border-radius: 12px;"></div>
+                </div>
+                
+                <!-- Side by side Actions -->
+                <div class="bento-card col-span-6">
+                    <h3 style="margin-bottom:20px; font-weight:600; font-size:1.2rem;">Incoming Requests</h3>
+                    <div id="incoming-requests-list" style="display:flex; flex-direction:column; gap:10px; flex-grow:1;">
+                        <div class="empty-state" style="margin:auto; display:flex; flex-direction:column; align-items:center;">
+                            <span style="font-size:3rem; margin-bottom:10px; opacity:0.5;">📭</span>
+                            <p>Go online to see requests...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bento-card col-span-6">
+                    <h3 style="margin-bottom:20px; font-weight:600; font-size:1.2rem;">Current Ride</h3>
+                    <div class="ride-details" style="flex-grow:1; display:flex; flex-direction:column;">
+                        <div id="driver-ride-status" class="status-badge" style="align-self:flex-start;">No active ride</div>
+                        <div id="driver-ride-details" style="flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
+                            <div class="empty-state" style="margin:auto; display:flex; flex-direction:column; align-items:center;">
+                                <span style="font-size:3rem; margin-bottom:10px; opacity:0.5;">🚗</span>
+                                <p>Ready to drive</p>
+                            </div>
+                        </div>
+                        <div id="driver-actions" style="display: none; margin-top:20px;">
+                            <button id="btn-update-status" class="primary-btn pulse-anim" style="width:100%; font-size:1.1rem; padding:16px;">Update Status</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Section -->
+                <div class="bento-card col-span-12">
+                    <h3 style="margin-bottom:24px; font-weight:600; font-size:1.2rem;">Statistics & History</h3>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:24px; margin-bottom:24px;">
+                        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:24px;">
+                            <p style="color:var(--text-muted); font-size:1rem; margin-bottom:8px;">Total Rides Completed</p>
+                            <div class="stat-row">
+                                <span class="stat-icon">🚗</span>
+                                <span id="stat-total-rides" class="stat-mega">0</span>
+                            </div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:24px;">
+                            <p style="color:var(--text-muted); font-size:1rem; margin-bottom:8px;">Average Rating</p>
+                            <div class="stat-row">
+                                <span class="stat-icon">⭐</span>
+                                <span id="stat-avg-rating" class="stat-mega">0.0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 style="margin-bottom:16px; color:var(--text-muted);">Recent History</h4>
+                    <div id="driver-history-list" style="max-height:400px; overflow-y:auto; padding-right:10px;">
+                        <div class="empty-state">
+                            <span style="font-size:2rem; margin-bottom:10px; opacity:0.5; display:block;">📜</span>
+                            <p>No completed rides yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="app.js?v=8"></script>
+</body>
+</html>
