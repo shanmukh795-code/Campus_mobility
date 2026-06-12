@@ -2,6 +2,8 @@
 
 **Live Demo:** [https://campus-mobility-pnhw.onrender.com](https://campus-mobility-pnhw.onrender.com)
 
+**Design Document:** https://drive.google.com/drive/folders/1wlkVrQBY2DwW_B3o0kgpv3tfrT7NA06u?usp=drive_link
+
 ## Project Overview
 This project is a real-time ride management platform designed for campus environments. It enables passengers to request rides and drivers to accept and manage those requests seamlessly. Built to be responsive, scalable, and highly interactive, the platform mirrors core functionalities of real-world ride-hailing applications.
 
